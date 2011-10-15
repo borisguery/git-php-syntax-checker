@@ -1,10 +1,11 @@
-===============
+=============================================
 Git PHP Lint Syntax Checker pre-commit hook
-===============
+=============================================
 
-:Author: Boris Guéry <guery.b@gmail.com>
-:Original author: Remigijus Jarmalavicius <remigijus(a)jarmalavicius.lt>
+:Author:      Boris Guéry <guery.b@gmail.com>
+:Thansk to: Remigijus Jarmalavicius <remigijus(a)jarmalavicius.lt>
 :Thanks to: Vytautas Povilaitis <php-checker(a)vytux.lt>
+
 
 About
 -----
