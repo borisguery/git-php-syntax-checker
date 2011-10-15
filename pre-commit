@@ -1,42 +1,68 @@
 #!/bin/bash
-# Author: Remigijus Jarmalavičius <remigijus@jarmalavicius.lt> 
-# Author: Vytautas Povilaitis <php-checker@vytux.lt>
+# Original Author: Remigijus Jarmalavičius <remigijus@jarmalavicius.lt>
+# Original Author: Vytautas Povilaitis <php-checker@vytux.lt>
+# Rewritten by: Boris Guéry <guery.b@gmail.com>
+# https://github.com/borisguery/git-php-syntax-checker
+
+# Add uncommon php extensions here
+PHP_EXTENSIONS="(.php$|.phtml$)"
 
 ROOT_DIR="$(pwd)/"
-LIST=$(git status | grep -e '\#.*\(modified\|added\)')
+LIST=$(git diff-index --cached --name-status HEAD | grep  -E "^(A|C|M|R)")
 ERRORS_BUFFER=""
+TEXT_DEFAULT="\\033[0;39m"
+TEXT_INFO="\\033[1;32m"
+TEXT_ERROR="\\033[1;31m"
+TEXT_UNDERLINE="\\0033[4m"
+TEXT_BOLD="\\0033[1m"
+
+echo -e "\\033[1;33m""PHP Lint - pre-commit hook syntax checker" "$TEXT_DEFAULT"
+echo
+
 for file in $LIST
 do
-    if [ "$file" == '#' ]; then
-        continue
-    fi
-    if [ $(echo "$file" | grep 'modified') ]; then
-        FILE_ACTION="modified"
-    elif [ $(echo "$file" | grep 'added') ]; then
-        FILE_ACTION="added"
-    else 
-        EXTENSION=$(echo "$file" | grep ".php$")
-        if [ "$EXTENSION" != "" ]; then
-            echo "Checking $FILE_ACTION file: $file" 
-            ERRORS=$(php -l $ROOT_DIR$file 2>&1 | grep "Parse error")
-            if [ "$ERRORS" != "" ]; then
-                if [ "$ERRORS_BUFFER" != "" ]; then
-                    ERRORS_BUFFER="$ERRORS_BUFFER\n$ERRORS"
-                else
-                    ERRORS_BUFFER="$ERRORS"
-                fi
-                echo "Syntax errors found in file: $file "
+    case "$(echo "$file" | cut -f1)" in
+        A) FILE_ACTION="added"
+            ;;
+        C) FILE_ACTION="copied"
+            ;;
+        M) FILE_ACTION="modified"
+            ;;
+        R) FILE_ACTION="renamed"
+            ;;
+    esac
+    ACTUAL_FILENAME=$(echo "$file" | cut -f2)
+    EXTENSION=$(echo "$ACTUAL_FILENAME" | grep -E $PHP_EXTENSIONS) 
+    if [ "$EXTENSION" != "" ]; then
+        echo -e "$TEXT_INFO" "Checking $FILE_ACTION file: $ACTUAL_FILENAME" "$TEXT_INFO"
+        ERRORS=$(php -l $ROOT_DIR$ACTUAL_FILENAME 2>&1 | grep "^Parse error")
+        ERRORS=$(echo $ERRORS | sed -e "s/$ACTUAL_FILENAME \(on line \)\([0-9]*\)$/\\$TEXT_BOLD$ACTUAL_FILENAME \\$TEXT_DEFAULT\\$TEXT_UNDERLINE\1\\$TEXT_ERROR\2\\$TEXT_DEFAULT/g")
+        ERRORS=$(echo $ERRORS | sed -e "s:$ROOT_DIR::g")
+        if [ "$ERRORS" != "" ]; then
+            if [ "$ERRORS_BUFFER" != "" ]; then
+                ERRORS_BUFFER="$ERRORS_BUFFER\n\t$ERRORS"
+            else
+                ERRORS_BUFFER="$ERRORS\t"
             fi
+            echo -e "$TEXT_ERROR" "Syntax errors found in file: $ACTUAL_FILENAME" "$TEXT_DEFAULT"
+        else
+            echo -e "$TEXT_INFO" "Syntax Ok" "$TEXT_DEFAULT"
         fi
     fi
 done
 if [ "$ERRORS_BUFFER" != "" ]; then
-    echo 
-    echo "These errors were found in try-to-commit files: "
-    echo -e $ERRORS_BUFFER
-    echo 
-    echo "Can't commit, fix errors first."
+    echo
+    echo -e "$TEXT_ERROR" "These errors were found in try-to-commit files: " "$TEXT_DEFAULT"
+    echo -e "\t$ERRORS_BUFFER"
+    echo
+    echo -e "$TEXT_ERROR" "Can't commit, fix errors first." "$TEXT_DEFAULT"
     exit 1
 else
-    echo "Commited successfully."
+    if (( "${#LIST[@]}" > 1 )); then
+        echo -e "$TEXT_INFO" "No errors were found." "$TEXT_DEFAULT"
+    else
+        echo -e "$TEXT_INFO" "No files to check." "$TEXT_DEFAULT"
+    fi
+    exit 0
 fi
+

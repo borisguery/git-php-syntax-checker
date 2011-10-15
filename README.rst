@@ -1,8 +1,9 @@
 ===============
-GIT - PHP check
+Git PHP Lint Syntax Checker pre-commit hook
 ===============
 
-:Author: Remigijus Jarmalavicius <remigijus(a)jarmalavicius.lt>
+:Author: Boris Guéry <guery.b@gmail.com>
+:Original author: Remigijus Jarmalavicius <remigijus(a)jarmalavicius.lt>
 :Thanks to: Vytautas Povilaitis <php-checker(a)vytux.lt>
 
 About
@@ -27,4 +28,4 @@ Bugs
 ----
 If you have found any bugs, please track them here:
 
-    https://github.com/ReekenX/git-php-syntax-checker/issues
+    https://github.com/borisguery/git-php-syntax-checker/issues
