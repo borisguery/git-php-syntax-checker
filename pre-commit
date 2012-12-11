@@ -35,7 +35,7 @@ do
     EXTENSION=$(echo "$ACTUAL_FILENAME" | grep -E $PHP_EXTENSIONS) 
     if [ "$EXTENSION" != "" ]; then
         echo -e "$TEXT_INFO" "Checking $FILE_ACTION file: $ACTUAL_FILENAME" "$TEXT_INFO"
-        ERRORS=$(php -l $ROOT_DIR$ACTUAL_FILENAME 2>&1 | grep "^Parse error")
+        ERRORS=$(php -l $ROOT_DIR$ACTUAL_FILENAME 2>&1 | grep "^PHP Parse error")
         ERRORS=$(echo $ERRORS | sed -e "s/$ACTUAL_FILENAME \(on line \)\([0-9]*\)$/\\$TEXT_BOLD$ACTUAL_FILENAME \\$TEXT_DEFAULT\\$TEXT_UNDERLINE\1\\$TEXT_ERROR\2\\$TEXT_DEFAULT/g")
         ERRORS=$(echo $ERRORS | sed -e "s:$ROOT_DIR::g")
         if [ "$ERRORS" != "" ]; then
